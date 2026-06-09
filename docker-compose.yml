@@ -1,27 +1,14 @@
 services:
-  redis:
-    image: redis:7-alpine
-    command: ["redis-server", "--appendonly", "yes", "--requirepass", "financepass"]
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-
   app:
     build: .
+    network_mode: host
     environment:
       PORT: "3000"
-      REDIS_HOST: redis
+      REDIS_HOST: 127.0.0.1
       REDIS_PORT: "6379"
-      REDIS_PASSWORD: financepass
+      REDIS_USERNAME: admin
+      REDIS_PASSWORD: Adinusa2026
       CACHE_TTL_SECONDS: "45"
       SESSION_TTL_SECONDS: "900"
       RATE_LIMIT_MAX: "5"
       RATE_LIMIT_WINDOW_SECONDS: "60"
-    ports:
-      - "3000:3000"
-    depends_on:
-      - redis
-
-volumes:
-  redis-data:

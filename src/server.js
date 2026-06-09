@@ -7,6 +7,7 @@ const port = Number(process.env.PORT || 3000);
 
 const redisHost = process.env.REDIS_HOST || 'localhost';
 const redisPort = Number(process.env.REDIS_PORT || 6379);
+const redisUsername = process.env.REDIS_USERNAME || '';
 const redisPassword = process.env.REDIS_PASSWORD || '';
 const cacheTtl = Number(process.env.CACHE_TTL_SECONDS || 45);
 const sessionTtl = Number(process.env.SESSION_TTL_SECONDS || 900);
@@ -24,6 +25,7 @@ const redis = createClient({
     host: redisHost,
     port: redisPort
   },
+  username: redisUsername || undefined,
   password: redisPassword || undefined
 });
 
