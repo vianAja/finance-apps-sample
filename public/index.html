@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finance Redis Demo</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #162033;
+    }
+
+    header {
+      background: #123c69;
+      color: white;
+      padding: 24px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 24px;
+    }
+
+    section {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(18, 60, 105, 0.08);
+    }
+
+    button {
+      background: #0b7285;
+      border: 0;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+      margin: 6px 6px 6px 0;
+      padding: 10px 14px;
+    }
+
+    button.secondary {
+      background: #495057;
+    }
+
+    pre {
+      background: #0b1220;
+      border-radius: 8px;
+      color: #d7e2ff;
+      min-height: 180px;
+      overflow: auto;
+      padding: 14px;
+      white-space: pre-wrap;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e9ecef;
+      padding: 10px;
+      text-align: left;
+    }
+
+    .badge {
+      background: #e7f5ff;
+      border-radius: 999px;
+      color: #1864ab;
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      margin-left: 8px;
+      padding: 4px 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Finance Redis Demo</h1>
+    <p>Simple balance inquiry, session, transfer lock, and Redis cache simulation.</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>Customer Actions</h2>
+      <button onclick="createSession()">Create Web Session</button>
+      <button onclick="checkBalance()">Check Balance</button>
+      <button onclick="transferFunds()">Transfer IDR 25,000</button>
+      <button class="secondary" onclick="loadRedisKeys()">Refresh Redis Keys</button>
+      <p>
+        Check balance twice. The first response should come from <strong>core-banking</strong>,
+        and the second should come from <strong>redis-cache</strong>.
+      </p>
+      <pre id="output">Waiting for action...</pre>
+    </section>
+
+    <section>
+      <h2>Sample Accounts</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Type</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody id="accounts"></tbody>
+      </table>
+    </section>
+
+    <section style="grid-column: 1 / -1;">
+      <h2>Redis Keys <span class="badge">live scan</span></h2>
+      <pre id="keys">Click "Refresh Redis Keys" after running actions.</pre>
+    </section>
+  </main>
+
+  <script>
+    const output = document.getElementById('output');
+    const keys = document.getElementById('keys');
+    const accounts = document.getElementById('accounts');
+
+    function render(target, data) {
+      target.textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function request(path, options = {}) {
+      const response = await fetch(path, {
+        headers: { 'Content-Type': 'application/json' },
+        ...options
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw data;
+      }
+      return data;
+    }
+
+    async function loadAccounts() {
+      const data = await request('/api/accounts');
+      accounts.innerHTML = data.map((account) => `
+        <tr>
+          <td>${account.accountNo}</td>
+          <td>${account.type}</td>
+          <td>IDR ${account.balance.toLocaleString('id-ID')}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function createSession() {
+      render(output, await request('/api/session', {
+        method: 'POST',
+        body: JSON.stringify({ customerId: 'C-992301' })
+      }));
+      await loadRedisKeys();
+    }
+
+    async function checkBalance() {
+      try {
+        render(output, await request('/api/balance/1001300001'));
+      } catch (error) {
+        render(output, error);
+      }
+      await loadRedisKeys();
+    }
+
+    async function transferFunds() {
+      render(output, await request('/api/transfer', {
+        method: 'POST',
+        body: JSON.stringify({
+          from: '1001300001',
+          to: '1001300002',
+          amount: 25000
+        })
+      }));
+      await loadAccounts();
+      await loadRedisKeys();
+    }
+
+    async function loadRedisKeys() {
+      render(keys, await request('/api/redis/keys'));
+    }
+
+    loadAccounts();
+  </script>
+</body>
+</html>

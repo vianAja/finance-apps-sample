@@ -1,0 +1,13 @@
+{
+  "name": "finance-redis-demo",
+  "version": "1.0.0",
+  "description": "Simple finance application for Redis integration lab",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "redis": "^4.6.13"
+  }
+}
