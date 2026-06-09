@@ -7,6 +7,7 @@ RUN npm install --omit=dev
 
 COPY src src
 COPY public public
+COPY data data
 
 EXPOSE 3000
 

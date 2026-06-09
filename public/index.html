@@ -1,132 +1,527 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Finance Redis Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Banking Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --panel-soft: #f0f4f8;
+      --line: #dde4ee;
+      --text: #142033;
+      --muted: #6a7687;
+      --primary: #0f2f56;
+      --primary-soft: #dbe8ff;
+      --success: #15803d;
+      --success-soft: #dcfce7;
+      --warning-soft: #fff7ed;
+      --shadow: 0 18px 40px rgba(15, 47, 86, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f7fb;
-      color: #162033;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      background: var(--bg);
+      color: var(--text);
     }
 
-    header {
-      background: #123c69;
-      color: white;
-      padding: 24px;
-    }
-
-    main {
+    .layout {
+      min-height: 100vh;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      padding: 24px;
+      grid-template-columns: 260px 1fr;
     }
 
-    section {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 8px 24px rgba(18, 60, 105, 0.08);
+    .sidebar {
+      background: #fff;
+      border-right: 1px solid var(--line);
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
     }
 
-    button {
-      background: #0b7285;
-      border: 0;
-      border-radius: 8px;
-      color: white;
-      cursor: pointer;
+    .brand {
       font-weight: 700;
-      margin: 6px 6px 6px 0;
-      padding: 10px 14px;
+      font-size: 20px;
+    }
+
+    .brand-subtitle,
+    .muted {
+      color: var(--muted);
+    }
+
+    .profile-card,
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .profile-card {
+      padding: 18px;
+    }
+
+    .avatar {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 20px;
+      margin-bottom: 14px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav button {
+      border: 0;
+      border-radius: 14px;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+      padding: 12px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .nav button.active {
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .main {
+      padding: 24px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--success-soft);
+      color: var(--success);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .card {
+      padding: 20px;
+    }
+
+    .card h2,
+    .card h3,
+    .card p {
+      margin-top: 0;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .summary-number {
+      font-size: 36px;
+      font-weight: 700;
+      margin: 8px 0 0;
+    }
+
+    .account-list,
+    .activity-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .account-item,
+    .activity-item,
+    .info-row {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: #fff;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .amount {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 10px 0 0;
+    }
+
+    button.primary,
+    button.secondary {
+      border: 0;
+      border-radius: 14px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 12px 16px;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: white;
     }
 
     button.secondary {
-      background: #495057;
+      background: var(--panel-soft);
+      color: var(--text);
     }
 
-    pre {
-      background: #0b1220;
-      border-radius: 8px;
-      color: #d7e2ff;
-      min-height: 180px;
-      overflow: auto;
-      padding: 14px;
-      white-space: pre-wrap;
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
     }
 
-    table {
-      border-collapse: collapse;
+    form {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    input,
+    select {
       width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
     }
 
-    th, td {
-      border-bottom: 1px solid #e9ecef;
-      padding: 10px;
-      text-align: left;
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .badge {
-      background: #e7f5ff;
-      border-radius: 999px;
-      color: #1864ab;
-      display: inline-block;
-      font-size: 12px;
-      font-weight: 700;
-      margin-left: 8px;
-      padding: 4px 8px;
+    .message {
+      margin-top: 14px;
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: none;
+    }
+
+    .message.success {
+      display: block;
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .message.error {
+      display: block;
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .confirmation {
+      margin-top: 16px;
+      display: none;
+      background: var(--warning-soft);
+      border: 1px solid #fed7aa;
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .confirmation.visible {
+      display: block;
+    }
+
+    .tiny {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 18px;
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+    }
+
+    @media (max-width: 1080px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .span-4,
+      .span-5,
+      .span-7,
+      .span-8,
+      .span-12 {
+        grid-column: span 12;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Finance Redis Demo</h1>
-    <p>Simple balance inquiry, session, transfer lock, and Redis cache simulation.</p>
-  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div>
+        <div class="brand">Digital Banking Demo</div>
+        <div class="brand-subtitle">Manage your finances securely and easily.</div>
+      </div>
 
-  <main>
-    <section>
-      <h2>Customer Actions</h2>
-      <button onclick="createSession()">Create Web Session</button>
-      <button onclick="checkBalance()">Check Balance</button>
-      <button onclick="transferFunds()">Transfer IDR 25,000</button>
-      <button class="secondary" onclick="loadRedisKeys()">Refresh Redis Keys</button>
-      <p>
-        Check balance twice. The first response should come from <strong>core-banking</strong>,
-        and the second should come from <strong>redis-cache</strong>.
-      </p>
-      <pre id="output">Waiting for action...</pre>
-    </section>
+      <section class="profile-card">
+        <div class="avatar" id="avatar">BS</div>
+        <div style="font-weight: 700;" id="profileName">Budi Santoso</div>
+        <div class="muted" id="profileId">ID: C-992301</div>
+        <div style="margin-top: 14px;">
+          <span class="pill" id="sessionPill">Session inactive</span>
+        </div>
+        <div class="actions" style="margin-top: 16px;">
+          <button class="primary" id="loginButton">Start Session</button>
+        </div>
+      </section>
 
-    <section>
-      <h2>Sample Accounts</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Account</th>
-            <th>Type</th>
-            <th>Balance</th>
-          </tr>
-        </thead>
-        <tbody id="accounts"></tbody>
-      </table>
-    </section>
+      <nav class="nav">
+        <button class="active" type="button">Dashboard</button>
+        <button type="button">Accounts</button>
+        <button type="button">Transfers</button>
+        <button type="button">Transactions</button>
+        <button type="button">Support</button>
+      </nav>
+    </aside>
 
-    <section style="grid-column: 1 / -1;">
-      <h2>Redis Keys <span class="badge">live scan</span></h2>
-      <pre id="keys">Click "Refresh Redis Keys" after running actions.</pre>
-    </section>
-  </main>
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1 style="margin: 0 0 8px;">Welcome back</h1>
+          <div class="muted">Your balances and recent activity are updated automatically.</div>
+        </div>
+        <div class="pill">Secure Connection</div>
+      </div>
+
+      <div class="grid">
+        <section class="card span-4">
+          <div class="card-header">
+            <div>
+              <h2 style="margin-bottom: 6px;">Customer Profile</h2>
+              <p class="muted" style="margin-bottom: 0;">Account access and daily overview.</p>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="tiny">Customer</div>
+            <div style="font-weight: 700;" id="profileNameCard">Budi Santoso</div>
+          </div>
+          <div class="info-row" style="margin-top: 12px;">
+            <div class="tiny">Online Access</div>
+            <div id="sessionStatusText">Inactive</div>
+          </div>
+          <div class="info-row" style="margin-top: 12px;">
+            <div class="tiny">Session Expires In</div>
+            <div id="sessionTtlText">-</div>
+          </div>
+        </section>
+
+        <section class="card span-8">
+          <div class="card-header">
+            <div>
+              <h2 style="margin-bottom: 6px;">Your Accounts</h2>
+              <p class="muted" style="margin-bottom: 0;">Click any balance button to refresh the latest amount.</p>
+            </div>
+          </div>
+          <div class="account-list" id="accountsList"></div>
+        </section>
+
+        <section class="card span-5">
+          <div class="card-header">
+            <div>
+              <h2 style="margin-bottom: 6px;">Make a Transfer</h2>
+              <p class="muted" style="margin-bottom: 0;">Send money between your accounts or to an external account.</p>
+            </div>
+          </div>
+
+          <form id="transferForm">
+            <label>
+              From Account
+              <select id="fromAccount" required></select>
+            </label>
+
+            <label>
+              Destination Type
+              <select id="destinationType">
+                <option value="internal">My Account</option>
+                <option value="external">External Account</option>
+              </select>
+            </label>
+
+            <label id="internalDestinationWrap">
+              To Account
+              <select id="toInternalAccount"></select>
+            </label>
+
+            <label id="externalDestinationWrap" style="display: none;">
+              External Account Number
+              <input id="toExternalAccount" type="text" placeholder="Example: 091823912">
+            </label>
+
+            <label>
+              Amount
+              <input id="amount" type="number" min="1000" step="1000" value="25000" required>
+            </label>
+
+            <label>
+              Reference / Notes
+              <input id="note" type="text" placeholder="Example: Monthly saving">
+            </label>
+
+            <div class="actions">
+              <button class="primary" id="transferButton" type="submit">Transfer Funds</button>
+              <button class="secondary" id="refreshButton" type="button">Refresh Data</button>
+            </div>
+          </form>
+
+          <div class="message" id="formMessage"></div>
+          <div class="confirmation" id="transferConfirmation"></div>
+        </section>
+
+        <section class="card span-7">
+          <div class="card-header">
+            <div>
+              <h2 style="margin-bottom: 6px;">Recent Activity</h2>
+              <p class="muted" style="margin-bottom: 0;">Latest transfers and payments from this customer account.</p>
+            </div>
+            <button class="secondary" id="reloadTransactions" type="button">Refresh Activity</button>
+          </div>
+          <div class="activity-list" id="transactionsList"></div>
+        </section>
+
+        <section class="card span-12">
+          <div class="card-header">
+            <div>
+              <h2 style="margin-bottom: 6px;">Daily Overview</h2>
+              <p class="muted" style="margin-bottom: 0;">Simple summary for today's banking activity.</p>
+            </div>
+          </div>
+          <div class="grid" style="gap: 14px;">
+            <div class="span-4 info-row">
+              <div class="tiny">Total Balance</div>
+              <div class="summary-number" id="totalBalance">IDR 0</div>
+            </div>
+            <div class="span-4 info-row">
+              <div class="tiny">Monthly Spending</div>
+              <div class="summary-number" style="font-size: 28px;" id="monthlySpending">IDR 0</div>
+            </div>
+            <div class="span-4 info-row">
+              <div class="tiny">Upcoming Payments</div>
+              <div class="summary-number" style="font-size: 28px;" id="upcomingPayments">0 Bills Due</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
 
   <script>
-    const output = document.getElementById('output');
-    const keys = document.getElementById('keys');
-    const accounts = document.getElementById('accounts');
+    const state = {
+      accounts: [],
+      transactions: [],
+      profile: null,
+      summary: null,
+      session: null
+    };
 
-    function render(target, data) {
-      target.textContent = JSON.stringify(data, null, 2);
+    const profileName = document.getElementById('profileName');
+    const profileNameCard = document.getElementById('profileNameCard');
+    const profileId = document.getElementById('profileId');
+    const avatar = document.getElementById('avatar');
+    const sessionPill = document.getElementById('sessionPill');
+    const sessionStatusText = document.getElementById('sessionStatusText');
+    const sessionTtlText = document.getElementById('sessionTtlText');
+    const accountsList = document.getElementById('accountsList');
+    const transactionsList = document.getElementById('transactionsList');
+    const totalBalance = document.getElementById('totalBalance');
+    const monthlySpending = document.getElementById('monthlySpending');
+    const upcomingPayments = document.getElementById('upcomingPayments');
+    const formMessage = document.getElementById('formMessage');
+    const transferConfirmation = document.getElementById('transferConfirmation');
+    const fromAccount = document.getElementById('fromAccount');
+    const toInternalAccount = document.getElementById('toInternalAccount');
+    const destinationType = document.getElementById('destinationType');
+    const internalDestinationWrap = document.getElementById('internalDestinationWrap');
+    const externalDestinationWrap = document.getElementById('externalDestinationWrap');
+    const toExternalAccount = document.getElementById('toExternalAccount');
+    const amount = document.getElementById('amount');
+    const note = document.getElementById('note');
+    const loginButton = document.getElementById('loginButton');
+    const transferButton = document.getElementById('transferButton');
+
+    function formatCurrency(value) {
+      return `IDR ${Number(value || 0).toLocaleString('id-ID')}`;
+    }
+
+    function initials(name) {
+      return String(name || '')
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0].toUpperCase())
+        .join('');
     }
 
     async function request(path, options = {}) {
@@ -141,52 +536,248 @@
       return data;
     }
 
-    async function loadAccounts() {
-      const data = await request('/api/accounts');
-      accounts.innerHTML = data.map((account) => `
-        <tr>
-          <td>${account.accountNo}</td>
-          <td>${account.type}</td>
-          <td>IDR ${account.balance.toLocaleString('id-ID')}</td>
-        </tr>
+    function renderSession(session) {
+      const active = Boolean(session && session.active);
+      sessionPill.textContent = active ? 'Session active' : 'Session inactive';
+      sessionPill.style.background = active ? 'var(--success-soft)' : '#eef2f7';
+      sessionPill.style.color = active ? 'var(--success)' : 'var(--muted)';
+      sessionStatusText.textContent = active ? 'Active' : 'Inactive';
+      sessionTtlText.textContent = active ? `${session.ttlSeconds} seconds` : '-';
+      loginButton.textContent = active ? 'Refresh Session' : 'Start Session';
+    }
+
+    function renderAccounts() {
+      if (!state.accounts.length) {
+        accountsList.innerHTML = '<div class="empty">No account data available.</div>';
+        return;
+      }
+
+      accountsList.innerHTML = state.accounts.map((account) => `
+        <div class="account-item">
+          <div class="row">
+            <div>
+              <div style="font-weight: 700;">${account.accountNo} (${account.type})</div>
+              <div class="tiny">Updated ${new Date(account.updatedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</div>
+            </div>
+            <button class="secondary" type="button" data-balance-account="${account.accountNo}">View Balance</button>
+          </div>
+          <div class="amount">${formatCurrency(account.balance)}</div>
+        </div>
+      `).join('');
+
+      accountsList.querySelectorAll('[data-balance-account]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const accountNo = button.getAttribute('data-balance-account');
+          const previousLabel = button.textContent;
+          button.disabled = true;
+          button.textContent = 'Loading...';
+          try {
+            const result = await request(`/api/balance/${accountNo}`);
+            await loadDashboard();
+            showMessage(`Latest balance loaded from ${result.source === 'cache' ? 'faster service' : 'live banking service'}.`, 'success');
+          } catch (error) {
+            showMessage(error.error || 'Unable to load balance right now.', 'error');
+          } finally {
+            button.disabled = false;
+            button.textContent = previousLabel;
+          }
+        });
+      });
+    }
+
+    function renderTransactions() {
+      if (!state.transactions.length) {
+        transactionsList.innerHTML = '<div class="empty">No recent activity available.</div>';
+        return;
+      }
+
+      transactionsList.innerHTML = state.transactions.map((item) => `
+        <div class="activity-item">
+          <div class="row">
+            <div>
+              <div style="font-weight: 700;">${item.transactionId}</div>
+              <div class="tiny">${item.fromLabel} to ${item.toLabel}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 700;">${formatCurrency(item.amount)}</div>
+              <div class="tiny">${item.displayDate}</div>
+            </div>
+          </div>
+          <div class="row" style="margin-top: 10px;">
+            <div class="tiny">${item.note || 'Transfer'}</div>
+            <div class="pill" style="padding: 6px 10px;">${item.status}</div>
+          </div>
+        </div>
       `).join('');
     }
 
-    async function createSession() {
-      render(output, await request('/api/session', {
-        method: 'POST',
-        body: JSON.stringify({ customerId: 'C-992301' })
-      }));
-      await loadRedisKeys();
+    function renderSummary() {
+      totalBalance.textContent = formatCurrency(state.summary?.totalBalance || 0);
+      monthlySpending.textContent = `IDR ${state.summary?.monthlySpendingFormatted || '0'}`;
+      upcomingPayments.textContent = `${state.summary?.upcomingPayments || 0} Bills Due`;
     }
 
-    async function checkBalance() {
-      try {
-        render(output, await request('/api/balance/1001300001'));
-      } catch (error) {
-        render(output, error);
+    function renderTransferOptions() {
+      const previousFrom = fromAccount.value;
+      const previousInternal = toInternalAccount.value;
+      fromAccount.innerHTML = state.accounts.map((account) => `
+        <option value="${account.accountNo}">${account.type} (${account.accountNo}) - ${formatCurrency(account.balance)}</option>
+      `).join('');
+
+      if (state.accounts.some((account) => account.accountNo === previousFrom)) {
+        fromAccount.value = previousFrom;
       }
-      await loadRedisKeys();
+
+      syncInternalDestinationOptions();
+
+      if ([...toInternalAccount.options].some((option) => option.value === previousInternal)) {
+        toInternalAccount.value = previousInternal;
+      }
     }
 
-    async function transferFunds() {
-      render(output, await request('/api/transfer', {
-        method: 'POST',
-        body: JSON.stringify({
-          from: '1001300001',
-          to: '1001300002',
-          amount: 25000
-        })
-      }));
-      await loadAccounts();
-      await loadRedisKeys();
+    function syncInternalDestinationOptions() {
+      const sourceValue = fromAccount.value;
+      const destinations = state.accounts.filter((account) => account.accountNo !== sourceValue);
+      toInternalAccount.innerHTML = destinations.map((account) => `
+        <option value="${account.accountNo}">${account.type} (${account.accountNo})</option>
+      `).join('');
     }
 
-    async function loadRedisKeys() {
-      render(keys, await request('/api/redis/keys'));
+    function renderProfile() {
+      if (!state.profile) {
+        return;
+      }
+
+      profileName.textContent = state.profile.name;
+      profileNameCard.textContent = state.profile.name;
+      profileId.textContent = `ID: ${state.profile.customerId}`;
+      avatar.textContent = initials(state.profile.name);
     }
 
-    loadAccounts();
+    function renderAll() {
+      renderProfile();
+      renderSession(state.session);
+      renderAccounts();
+      renderTransactions();
+      renderSummary();
+      renderTransferOptions();
+    }
+
+    function showMessage(message, type) {
+      formMessage.className = `message ${type}`;
+      formMessage.textContent = message;
+    }
+
+    function clearMessage() {
+      formMessage.className = 'message';
+      formMessage.textContent = '';
+    }
+
+    function showConfirmation(payload) {
+      if (!payload) {
+        transferConfirmation.className = 'confirmation';
+        transferConfirmation.innerHTML = '';
+        return;
+      }
+
+      transferConfirmation.className = 'confirmation visible';
+      transferConfirmation.innerHTML = `
+        <strong>Transfer successful</strong>
+        <div style="margin-top: 8px;">Reference: ${payload.transactionId}</div>
+        <div class="tiny" style="margin-top: 6px;">${payload.confirmation.from} to ${payload.confirmation.to}</div>
+        <div class="tiny">Amount: IDR ${payload.confirmation.amountFormatted}</div>
+        <div class="tiny">Note: ${payload.confirmation.note}</div>
+      `;
+    }
+
+    async function loadDashboard() {
+      const data = await request('/api/dashboard');
+      state.profile = data.profile;
+      state.session = data.session;
+      state.accounts = data.accounts;
+      state.transactions = data.transactions;
+      state.summary = data.summary;
+      renderAll();
+    }
+
+    async function startSession() {
+      loginButton.disabled = true;
+      try {
+        clearMessage();
+        const result = await request('/api/session', {
+          method: 'POST',
+          body: JSON.stringify({ customerId: state.profile?.customerId || 'C-992301' })
+        });
+        state.session = result.session;
+        renderSession(state.session);
+        showMessage(result.message, 'success');
+      } catch (error) {
+        showMessage(error.error || 'Unable to start session right now.', 'error');
+      } finally {
+        loginButton.disabled = false;
+      }
+    }
+
+    async function submitTransfer(event) {
+      event.preventDefault();
+      transferButton.disabled = true;
+      clearMessage();
+      showConfirmation(null);
+
+      const destination = destinationType.value === 'internal'
+        ? toInternalAccount.value
+        : toExternalAccount.value.trim();
+
+      try {
+        const payload = await request('/api/transfer', {
+          method: 'POST',
+          body: JSON.stringify({
+            from: fromAccount.value,
+            to: destination,
+            amount: Number(amount.value),
+            note: note.value
+          })
+        });
+
+        state.profile = payload.dashboard.profile;
+        state.session = payload.dashboard.session;
+        state.accounts = payload.dashboard.accounts;
+        state.transactions = payload.dashboard.transactions;
+        state.summary = payload.dashboard.summary;
+        renderAll();
+        showMessage(payload.message, 'success');
+        showConfirmation(payload);
+        note.value = '';
+      } catch (error) {
+        showMessage(error.error || 'Transfer could not be completed.', 'error');
+      } finally {
+        transferButton.disabled = false;
+      }
+    }
+
+    function toggleDestination() {
+      const isInternal = destinationType.value === 'internal';
+      internalDestinationWrap.style.display = isInternal ? 'grid' : 'none';
+      externalDestinationWrap.style.display = isInternal ? 'none' : 'grid';
+      if (!isInternal) {
+        toExternalAccount.focus();
+      }
+    }
+
+    loginButton.addEventListener('click', startSession);
+    document.getElementById('transferForm').addEventListener('submit', submitTransfer);
+    document.getElementById('refreshButton').addEventListener('click', loadDashboard);
+    document.getElementById('reloadTransactions').addEventListener('click', loadDashboard);
+    destinationType.addEventListener('change', toggleDestination);
+    fromAccount.addEventListener('change', syncInternalDestinationOptions);
+
+    loadDashboard().catch((error) => {
+      showMessage(error.error || 'The dashboard could not be loaded.', 'error');
+    });
+
+    setInterval(() => {
+      loadDashboard().catch(() => {});
+    }, 5000);
   </script>
 </body>
 </html>
